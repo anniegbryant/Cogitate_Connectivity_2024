@@ -1,0 +1,48 @@
+#!/bin/bash
+#PBS -j oe
+#PBS -l walltime=24:00:00
+#PBS -P hctsa
+#PBS -l select=1:ncpus=1:mem=20GB:mpiprocs=1
+#PBS -V
+
+# Check if user supplied a command-line argument
+if [ -z ${line_to_read+x} ]
+then
+    line_to_read=$PBS_ARRAY_INDEX
+fi
+
+model_name_params=`sed -n "${line_to_read} p" $input_model_file`
+model_name_array=($model_name_params)
+
+subject=${model_name_array[0]}
+
+echo "Now running source localization for $subject"
+
+# Artemis modules
+module load anaconda3
+conda activate /home/abry4213/meg_msp1_env
+module load python/3.9.15
+
+# Call preprocessing script
+MEG_repo_root=/project/hctsa/annie/github/cogitate-msp1/coglib
+bids_root=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/
+visit="1"
+record="run"
+
+# Physics modules
+# module load Anaconda3-5.1.0
+# /usr/physics/Modules/3.2.8/bin/modulecmd bash load Anaconda3-5.1.0 --silent
+# source /usr/physics/python/anaconda3/etc/profile.d/conda.sh 
+# conda activate pyspi
+# MEG_repo_root=/headnode1/abry4213/github/cogitate-msp1/coglib
+# bids_root=/headnode1/abry4213/data/Cogitate_MEG_challenge/
+
+################################# Source localization #################################
+
+python3 $MEG_repo_root/meeg/activation/S03b_source_dur_erf.py \
+--sub $subject --visit $visit --method dspm \
+--bids_root $bids_root
+
+python3 $MEG_repo_root/meeg/activation/S04b_source_dur_erf_ga.py \
+--visit $visit --method dspm \
+--bids_root $bids_root

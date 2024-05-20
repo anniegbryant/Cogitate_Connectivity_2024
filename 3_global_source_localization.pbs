@@ -1,0 +1,28 @@
+#!/bin/bash
+#PBS -j oe
+#PBS -l walltime=24:00:00
+#PBS -P hctsa
+#PBS -l select=1:ncpus=1:mem=20GB:mpiprocs=1
+#PBS -V
+
+echo "Now running global source localization"
+
+#module load Anaconda3-5.1.0
+module load anaconda3
+# Activate conda environment
+conda activate /home/abry4213/meg_msp1_env
+# Load python
+module load python/3.9.15
+
+# Call preprocessing script
+MEG_repo_root=/project/hctsa/annie/github/cogitate-msp1/coglib
+bids_root=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/
+participants_file_list=${bids_root}/subject_list_filtered.txt
+visit="1"
+record="run"
+
+#################################### Global source localization ####################################
+# Iterate over the alpha, beta, and gamma bands
+for band in alpha beta gamma; do
+    python3 $MEG_repo_root/meeg/activation/S02_source_loc_ga.py --visit $visit --band $band --bids_root $bids_root --method dspm --participants_file_list $participants_file_list
+done
