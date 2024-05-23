@@ -29,20 +29,8 @@ bids_root=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/
 visit="1"
 record="run"
 
-# Physics modules
-# module load Anaconda3-5.1.0
-# /usr/physics/Modules/3.2.8/bin/modulecmd bash load Anaconda3-5.1.0 --silent
-# source /usr/physics/python/anaconda3/etc/profile.d/conda.sh 
-# conda activate pyspi
-# MEG_repo_root=/headnode1/abry4213/github/cogitate-msp1/coglib
-# bids_root=/headnode1/abry4213/data/Cogitate_MEG_challenge/
-
 ################################# Source localization #################################
 
-python3 $MEG_repo_root/meeg/activation/S03b_source_dur_erf.py \
+python3 $MEG_repo_root/meeg/activation/S01_source_loc.py \
 --sub $subject --visit $visit --method dspm \
---bids_root $bids_root
-
-python3 $MEG_repo_root/meeg/activation/S04b_source_dur_erf_ga.py \
---visit $visit --method dspm \
 --bids_root $bids_root

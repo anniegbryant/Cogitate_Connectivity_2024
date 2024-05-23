@@ -2,7 +2,6 @@
 #PBS -j oe
 #PBS -l walltime=24:00:00
 #PBS -P hctsa
-#PBS -l select=1:ncpus=1:mem=20GB:mpiprocs=1
 #PBS -V
 
 # Check if user supplied a command-line argument
@@ -25,20 +24,12 @@ module load python/3.9.15
 
 # Call preprocessing script
 MEG_repo_root=/project/hctsa/annie/github/cogitate-msp1/coglib
+Cogitate_repo_root=/project/hctsa/annie/github/Cogitate_Connectivity_2024
 bids_root=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/
 visit="1"
 record="run"
 
-# Physics modules
-# module load Anaconda3-5.1.0
-# /usr/physics/Modules/3.2.8/bin/modulecmd bash load Anaconda3-5.1.0 --silent
-# source /usr/physics/python/anaconda3/etc/profile.d/conda.sh 
-# conda activate pyspi
-# MEG_repo_root=/headnode1/abry4213/github/cogitate-msp1/coglib
-# bids_root=/headnode1/abry4213/data/Cogitate_MEG_challenge/
-
 ################################# Source localization #################################
 
-python3 $MEG_repo_root/meeg/activation/S01_source_loc.py \
---sub $subject --visit $visit --method dspm \
---bids_root $bids_root
+python3 $Cogitate_repo_root/extract_time_series_from_MEG.py --sub $subject --method dspm --bids_root $bids_root --n_jobs $n_jobs --region_option hypothesis_driven
+

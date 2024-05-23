@@ -1,0 +1,37 @@
+#!/bin/bash
+#PBS -j oe
+#PBS -l walltime=24:00:00
+#PBS -P hctsa
+#PBS -l select=1:ncpus=1:mem=40GB:mpiprocs=1
+#PBS -V
+
+
+echo "Now running preprocessing for $subject"
+
+# Load python
+module load python/3.9.15
+
+# Call preprocessing script
+MEG_repo_root=/project/hctsa/annie/github/cogitate-msp1/coglib
+bids_root=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/
+visit="1"
+record="run"
+
+# Freesurfer stuff
+module load freesurfer/7.1.1
+export FREESURFER_HOME=/usr/local/freesurfer/7.1.1
+source $FREESURFER_HOME/SetUpFreeSurfer.sh
+export SUBJECTS_DIR=${bids_root}/derivatives/fs
+export coreg_dir=${bids_root}/derivatives/coreg
+export out_fw=${bids_root}/derivatives/forward
+
+export PATH="$FREESURFER_HOME/bin:$PATH"
+export PATH="$FREESURFER_HOME/fsfast/bin:$PATH"
+
+##################################### freesurfer ######################################
+
+reconcmd="recon-all -all -subjid sub-${subject} -i ${bids_root}/sub-${subject}/ses-1/anat/sub-${subject}_ses-1_T1w.nii.gz -sd /project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/derivatives/fs"
+
+# echo $reconcmd
+
+# $reconcmd

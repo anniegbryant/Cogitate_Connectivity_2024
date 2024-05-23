@@ -1,0 +1,39 @@
+{
+  "GNWT_ROIs": [
+    "G_and_S_cingul-Ant",
+    "G_and_S_cingul-Mid-Ant",
+    "G_and_S_cingul-Mid-Post",
+    "G_front_inf-Opercular",
+    "G_front_inf-Orbital",
+    "G_front_inf-Triangul",
+    "G_front_middle",
+    "Lat_Fis-ant-Horizont",
+    "Lat_Fis-ant-Vertical",
+    "S_front_inf",
+    "S_front_middle",
+    "S_front_sup"
+  ],
+  "IIT_ROIs": [
+    "G_and_S_occipital_inf",
+    "G_cuneus",
+    "G_occipital_middle",
+    "G_occipital_sup",
+    "G_oc-temp_lat-fusifor",
+    "G_oc-temp_med-Lingual",
+    "G_oc-temp_med-Parahip",
+    "G_temporal_inf",
+    "Pole_occipital",
+    "Pole_temporal",
+    "S_calcarine",
+    "S_intrapariet_and_P_trans",
+    "S_oc_middle_and_Lunatus",
+    "S_oc_sup_and_transversal",
+    "S_temporal_sup"
+  ],
+  "Category_Selective_ROIs": [
+    "G_and_S_occipital_inf",
+    "G_oc-temp_lat-fusifor",
+    "G_occipital_middle",
+    "S_oc_middle_and_Lunatus"
+  ]
+}
