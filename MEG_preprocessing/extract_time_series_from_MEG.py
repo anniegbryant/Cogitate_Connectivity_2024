@@ -11,17 +11,13 @@ from joblib import Parallel, delayed
 
 import mne
 import mne_bids
-from mne.minimum_norm import apply_inverse
+from mne.minimum_norm import apply_inverse,apply_inverse_epochs
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--sub',
                     type=str,
                     default='CB040',
                     help='site_id + subject_id (e.g. "CB040")')
-parser.add_argument('--method',
-                    type=str,
-                    default='dspm',
-                    help='method used for the inverse solution ("lcmv", "dics", "dspm")')
 parser.add_argument('--bids_root',
                     type=str,
                     default='/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/',
@@ -42,7 +38,6 @@ visit_id = "1" # Using the first visit for this project
 sfreq = 100 # Setting sampling frequency to 100Hz
 
 subject_id = opt.sub
-inv_method = opt.method  #this variable is used only to set the output filename
 region_option = opt.region_option
 bids_root = opt.bids_root
 n_jobs = opt.n_jobs
@@ -125,7 +120,7 @@ def resample_epochs(epochs_all, sfreq, bids_path_epo_rs, tmin=-0.5, tmax=1.99):
         epochs_rs.save(bids_path_epo_rs.fpath, overwrite=True)
 
 # Helper function to compute covariance matrices and inverse solution 
-def fit_cov_and_inverse(subject_id, visit_id, downsample=True, tmin=-0.5, tmax=1.99):
+def fit_cov_and_inverse(subject_id, visit_id, factor, conditions, bids_root, downsample=True, tmin=-0.5, tmax=1.99):
     # Set directory paths
     prep_deriv_root = op.join(bids_root, "derivatives", "preprocessing")
     fwd_deriv_root = op.join(bids_root, "derivatives", "forward")
@@ -246,11 +241,6 @@ def fit_cov_and_inverse(subject_id, visit_id, downsample=True, tmin=-0.5, tmax=1
         fixed=False,
         rank=rank,
         use_cps=True)
-    
-    factor = ['Category', 'Task_relevance', "Duration"]
-    conditions = [['face', 'object', 'letter', 'false'],
-                ['Relevant non-target','Irrelevant'],
-                ['500ms', '1000ms', '1500ms']]
 
     # Find all combinations between variables' levels
     if len(factor) == 1:
@@ -264,9 +254,60 @@ def fit_cov_and_inverse(subject_id, visit_id, downsample=True, tmin=-0.5, tmax=1
                                             conditions[2]))
         
     return epochs_final, inverse_operator, cond_combs
+# Helper function to process condition combination 
+def cond_comb_helper_process_by_epoch(cond_comb, epochs_final, inverse_operator, labels_dict, subject_time_series_output_path):
+    print("\nAnalyzing %s: %s" % (factor, cond_comb))
+
+    # Take subset of epochs corresponding to this condition combination
+    cond_epochs = epochs_final['%s == "%s" and %s == "%s" and %s == "%s"' % (
+        factor[0], cond_comb[0], 
+        factor[1], cond_comb[1], 
+        factor[2], cond_comb[2])]
+    fname_base = f"{cond_comb[0]}_{cond_comb[1]}_{cond_comb[2]}".replace(" ","-")
+
+    # Compute inverse solution for each epoch
+    snr = 3.0
+    lambda2 = 1.0 / snr ** 2
+    stcs = apply_inverse_epochs(cond_epochs, inverse_operator,
+                                lambda2=1.0 / snr ** 2, verbose=False,
+                                method="dSPM", pick_ori="normal")
+
+    # Extract time course for each stc
+    for i in range(len(stcs)):
+
+        # Find epoch number
+        epoch_number = i+1
+
+        # Find stc
+        stc = stcs[i]
+
+        # Loop over labels        
+        for label_name, label in labels_dict.items():
+
+            # Select data in label
+            stc_in = stc.in_label(label)
+
+            # Extract time course data, averaged across channels within ROI
+            times = stc_in.times
+            data = stc_in.data.mean(axis=0)
+
+            # Concatenate into dataframe
+            epoch_df = pd.DataFrame({
+                'epoch_number': epoch_number,
+                'stimulus_type': cond_comb[0], 
+                'relevance_type': cond_comb[1],
+                'duration': cond_comb[2],
+                'times': times,
+                'meta_ROI': label_name,
+                'data': data})
+            
+            # Write this epoch to a CSV file
+            output_CSV_file = op.join(subject_time_series_output_path, f"{fname_base}_epoch{epoch_number}_{label_name}.csv")
+            epoch_df.to_csv(output_CSV_file, index=False)
+                
 
 # Helper function to process condition combination 
-def cond_comb_helper_process(cond_comb, epochs_final, inverse_operator, b_params, labels_dict, bids_path_epo, time_series_output_path, n_jobs=1):
+def cond_comb_helper_process_freq(cond_comb, epochs_final, inverse_operator, b_params, labels_dict, bids_path_epo, time_series_output_path, n_jobs=1):
     print("\nAnalyzing %s: %s" % (factor, cond_comb))
 
     # Select epochs
@@ -304,7 +345,7 @@ def cond_comb_helper_process(cond_comb, epochs_final, inverse_operator, b_params
                     
     # Loop over bands
     for band, stc in stcs.items():
-        print(f"\nPlotting {band}")
+        print(f"\Finding time series for {band}")
         # Loop over labels        
         for label_name, label in labels_dict.items():
 
@@ -315,7 +356,6 @@ def cond_comb_helper_process(cond_comb, epochs_final, inverse_operator, b_params
                 check=False)
             
             if not os.path.isfile(bids_path_TS.fpath):
-                
                 print(f"label: {label_name}")
                             
                 # Select data in label
@@ -332,7 +372,7 @@ def cond_comb_helper_process(cond_comb, epochs_final, inverse_operator, b_params
                 df.to_csv(bids_path_TS.fpath, index=False)
 
 # Extract frequency band-specific time series for the given ROI subset
-def extract_TS_freq_band(subject_id, visit_id, region_option):
+def extract_TS_freq_power(subject_id, visit_id, region_option, factor, conditions):
 
     fs_deriv_root = op.join(bids_root, "derivatives", "fs")
     rois_deriv_root = op.join(bids_root, "derivatives", "roilabel")
@@ -379,7 +419,7 @@ def extract_TS_freq_band(subject_id, visit_id, region_option):
 
         # Find epochs_rs, inverse_operator, cond_combs
         print("Now finding inverse operator")
-        epochs_final, inverse_operator, cond_combs = fit_cov_and_inverse(subject_id, visit_id, downsample=False)
+        epochs_final, inverse_operator, cond_combs = fit_cov_and_inverse(subject_id, visit_id, factor, conditions, bids_root, downsample=False)
 
         # Set band-sepcific params
         b_params = {
@@ -401,7 +441,7 @@ def extract_TS_freq_band(subject_id, visit_id, region_option):
 
         # Loop over conditions of interest
         print("Now looping over task conditions")
-        Parallel(n_jobs=n_jobs)(delayed(cond_comb_helper_process)(cond_comb=cond_comb, 
+        Parallel(n_jobs=int(n_jobs/2))(delayed(cond_comb_helper_process)(cond_comb=cond_comb, 
                                                                   epochs_final=epochs_final, 
                                                                   inverse_operator=inverse_operator, 
                                                                   b_params=b_params, 
@@ -413,6 +453,122 @@ def extract_TS_freq_band(subject_id, visit_id, region_option):
         
         with open(bids_path_label_names.fpath, "w") as output:
             output.write(str(list(labels_dict.keys())))
+
+# Extract all epoch time series
+def extract_all_epoch_TS(subject_id, visit_id, region_option, factor, conditions):
+
+    fs_deriv_root = op.join(bids_root, "derivatives", "fs")
+    rois_deriv_root = op.join(bids_root, "derivatives", "roilabel")
+    prep_deriv_root = op.join(bids_root, "derivatives", "preprocessing")
+
+    time_series_output_path = op.join(bids_root, "derivatives", "MEG_time_series")
+    if not op.exists(time_series_output_path):
+        os.makedirs(time_series_output_path, exist_ok=True)
+
+    # Time series output path for this subject
+    subject_time_series_output_path = op.join(time_series_output_path, f"sub-{subject_id}", f"ses-{visit_id}", "meg")
+    if not op.exists(subject_time_series_output_path):
+        os.makedirs(subject_time_series_output_path, exist_ok=True)
+        
+    # Set task
+    bids_task = 'dur'
+
+    # Read epoched data
+    bids_path_epo = mne_bids.BIDSPath(
+        root=prep_deriv_root, 
+        subject=subject_id,  
+        datatype='meg',  
+        task=bids_task,
+        session=visit_id, 
+        suffix='epo',
+        extension='.fif',
+        check=False)
+ 
+    # Use Desikan--Killiany atlas to compute dictionary of labels
+    labels_atlas = mne.read_labels_from_annot(
+        "sub-"+subject_id, 
+        parc='aparc.a2009s',
+        subjects_dir=fs_deriv_root)
+    labels_dict = compute_ROI_labels(labels_atlas, region_option, rois_deriv_root)
+
+    # Save label names
+    bids_path_label_names = bids_path_epo.copy().update(
+                    root=time_series_output_path,
+                    suffix="desc-labels_"+region_option,
+                    extension='.txt',
+                    check=False)
+
+    # Find epochs_rs, inverse_operator, cond_combs
+    print("Now finding inverse operator")
+    epochs_final, inverse_operator, cond_combs = fit_cov_and_inverse(subject_id, visit_id, factor, conditions, bids_root, downsample=False)
+
+    # extract time course in label with pca_flip mode
+    src = inverse_operator['src']
+
+    # # Loop over conditions of interest
+    # for cond_comb in cond_combs:
+    #     print("\nAnalyzing %s: %s" % (factor, cond_comb))
+
+    #     # Take subset of epochs corresponding to this condition combination
+    #     cond_epochs = epochs_final['%s == "%s" and %s == "%s" and %s == "%s"' % (
+    #         factor[0], cond_comb[0], 
+    #         factor[1], cond_comb[1], 
+    #         factor[2], cond_comb[2])]
+    #     fname_base = f"{cond_comb[0]}_{cond_comb[1]}_{cond_comb[2]}".replace(" ","-")
+
+    #     # Compute inverse solution for each epoch
+    #     snr = 3.0
+    #     lambda2 = 1.0 / snr ** 2
+    #     stcs = apply_inverse_epochs(cond_epochs, inverse_operator,
+    #                                 lambda2=1.0 / snr ** 2, verbose=False,
+    #                                 method="dSPM", pick_ori="normal")
+
+    #     # Extract time course for each stc
+    #     for i in range(len(stcs)):
+
+    #         # Find epoch number
+    #         epoch_number = i+1
+
+    #         # Find stc
+    #         stc = stcs[i]
+
+    #         # Loop over labels        
+    #         for label_name, label in labels_dict.items():
+
+    #             # Select data in label
+    #             stc_in = stc.in_label(label)
+
+    #             # Extract time course data, averaged across channels within ROI
+    #             times = stc_in.times
+    #             data = stc_in.data.mean(axis=0)
+
+    #             # Concatenate into dataframe
+    #             epoch_df = pd.DataFrame({
+    #                 'epoch_number': epoch_number,
+    #                 'stimulus_type': cond_comb[0], 
+    #                 'relevance_type': cond_comb[1],
+    #                 'duration': cond_comb[2],
+    #                 'times': times,
+    #                 'meta_ROI': label_name,
+    #                 'data': data})
+                
+    #             # Write this epoch to a CSV file
+    #             output_CSV_file = op.join(subject_time_series_output_path, f"{fname_base}_epoch{epoch_number}_{label_name}.csv")
+    #             epoch_df.to_csv(output_CSV_file, index=False)
+
+    # Loop over conditions of interest
+    print("Now looping over task conditions")
+    Parallel(n_jobs=int(n_jobs))(delayed(cond_comb_helper_process_by_epoch)(cond_comb=cond_comb, 
+                                                                epochs_final=epochs_final, 
+                                                                inverse_operator=inverse_operator, 
+                                                                labels_dict=labels_dict, 
+                                                                subject_time_series_output_path=subject_time_series_output_path)
+                                                for cond_comb in cond_combs)
+    
+    if not os.path.isfile(bids_path_label_names):
+        with open(bids_path_label_names.fpath, "w") as output:
+            output.write(str(list(labels_dict.keys())))
+
 
 # Extract event related field (ERF) time series for the given ROI subset
 def extract_TS_ERF(subject_id, visit_id, region_option):
@@ -512,6 +668,7 @@ def extract_TS_ERF(subject_id, visit_id, region_option):
 
 if __name__ == '__main__':
     # Extract frequency band-specific time series
-    extract_TS_freq_band(subject_id, visit_id, region_option)
+    # extract_TS_freq_band(subject_id, visit_id, region_option, factor, conditions)
     # # Event related field time series extraction
     # extract_TS_ERF(subject_id, visit_id, region_option)
+    extract_all_epoch_TS(subject_id, visit_id, region_option, factor, conditions)

@@ -1,0 +1,43 @@
+#!/bin/bash
+#PBS -j oe
+#PBS -l walltime=24:00:00
+#PBS -P hctsa
+#PBS -V
+
+##### Change to current working directory
+cd $PBS_O_WORKDIR
+
+##### Obtain Parameters from input.txt file using $PBS_ARRAY_INDEX as the line number #####
+
+# Check if user supplied a command-line argument
+if [ -z ${line_to_read+x} ]
+then
+    line_to_read=$PBS_ARRAY_INDEX
+fi
+
+model_name_params=`sed -n "${line_to_read} p" $input_model_file`
+model_name_array=($model_name_params)
+
+subject=${model_name_array[0]}
+echo "Now running preprocessing for $subject"
+
+# Load anaconda
+# module load anaconda3
+conda activate pyspi
+
+# Load python
+# module load python/3.9.15
+
+# Call preprocessing script
+Cogitate_repo_root=/headnode1/abry4213/github/Cogitate_Connectivity_2024/feature_extraction
+bids_root=/headnode1/abry4213/data/Cogitate_MEG_challenge
+visit="1"
+record="run"
+
+#################################### Preprocessing ####################################
+
+# Run the requested step
+cmd="python3 $Cogitate_repo_root/run_pyspi_for_subject.py --sub $subject --visit_id $visit --bids_root $bids_root --region_option hypothesis_driven --n_jobs $n_jobs"
+
+echo $cmd 
+$cmd

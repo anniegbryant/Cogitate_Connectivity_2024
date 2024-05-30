@@ -100,19 +100,39 @@ input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list
 # $cmd
 
 ##################################################################################################
-# Subject-specific activation analysis
+# Extract time series and frequency power across participants
+##################################################################################################
+
+# input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list_filtered.txt
+
+# # Define the command
+# n_jobs=4
+# num_cores=10
+# cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/MEG_extract_time_series_^array_index^.out \
+# -N MEG_extract_time_series \
+# -J 1-46 \
+# -v input_model_file=$input_model_file,n_jobs=$n_jobs \
+# -l select=1:ncpus=$num_cores:mem=120GB:mpiprocs=$num_cores \
+# 7_extract_time_series.pbs"
+
+# echo $cmd
+
+# # Run the command
+# $cmd
+
+##################################################################################################
+# Extract time series and frequency power across participants
 ##################################################################################################
 
 input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list_filtered.txt
 
 # Define the command
-n_jobs=4
-cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/MEG_extract_time_series_^array_index^.out \
--N MEG_extract_time_series \
+cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/MEG_combine_time_series_^array_index^.out \
+-N MEG_combine_time_series \
 -J 1-46 \
--v input_model_file=$input_model_file,n_jobs=$n_jobs \
--l select=1:ncpus=$n_jobs:mem=120GB:mpiprocs=$n_jobs \
-7_extract_time_series.pbs"
+-v input_model_file=$input_model_file \
+-l select=1:ncpus=1:mem=10GB:mpiprocs=1 \
+8_combine_time_series.pbs"
 
 echo $cmd
 

@@ -23,12 +23,17 @@ module load python/3.9.15
 
 # Call preprocessing script
 MEG_repo_root=/project/hctsa/annie/github/cogitate-msp1/coglib
-Cogitate_repo_root=/project/hctsa/annie/github/Cogitate_Connectivity_2024/MEG_preprocessing
 bids_root=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/
+time_series_file_path=$bids_root/derivatives/MEG_time_series
 visit="1"
 record="run"
 
-################################# Source localization #################################
+################################# File compression #################################
 
-python3 $Cogitate_repo_root/extract_time_series_from_MEG.py --sub $subject --bids_root $bids_root --n_jobs $n_jobs --region_option hypothesis_driven
+subject_time_series_file_path=${time_series_file_path}/sub-${subject}/ses-${visit}/meg
 
+if ! -test f ${time_series_file_path}/sub-${subject}_ses-${visit}_epochs.zip; then
+    zip ${time_series_file_path}/sub-${subject}_ses-${visit}_epochs.zip ${subject_time_series_file_path}/*1000ms_epoch*
+fi
+
+################################# Averaging across participants #################################
