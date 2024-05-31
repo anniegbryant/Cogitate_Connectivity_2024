@@ -33,25 +33,25 @@ def combine_files_for_participant(subject_id, visit_id, bids_root, duration="100
 
     output_file = f"{bids_root}/derivatives/MEG_time_series/sub-{subject_id}_ses-{visit_id}_meg_{duration}_all_time_series.csv"
 
-    if not os.path.isfile(output_file):
-        time_series_output_path = f"{bids_root}/derivatives/MEG_time_series"
-        subject_time_series_output_path = f"{time_series_output_path}/sub-{subject_id}/ses-{visit_id}/meg"
+    # if not os.path.isfile(output_file):
+    time_series_output_path = f"{bids_root}/derivatives/MEG_time_series"
+    subject_time_series_output_path = f"{time_series_output_path}/sub-{subject_id}/ses-{visit_id}/meg"
 
-        time_series_files = [f"{subject_time_series_output_path}/{file}" for file in os.listdir(subject_time_series_output_path) if f"{duration}_epoch" in file]
-        all_time_series_data = pd.concat([pd.read_csv(file) for file in time_series_files])
+    time_series_files = [f"{subject_time_series_output_path}/{file}" for file in os.listdir(subject_time_series_output_path) if f"{duration}_epoch" in file]
+    all_time_series_data = pd.concat([pd.read_csv(file) for file in time_series_files])
 
-        # Average across epochs
-        averaged_by_condition = (all_time_series_data
-                                .groupby(["stimulus_type", "relevance_type", "duration", "times", "meta_ROI"], as_index=False)["data"]
-                                .mean()
-                                .assign(meta_ROI = lambda x: x.meta_ROI.str.replace("_meta_ROI", ""))
-                                .pivot(index=["stimulus_type", "relevance_type", "duration", "times"], columns="meta_ROI", values="data"))
+    # Average across epochs
+    averaged_by_condition = (all_time_series_data
+                            .groupby(["stimulus_type", "relevance_type", "duration", "times", "meta_ROI"], as_index=False)["data"]
+                            .mean()
+                            .assign(meta_ROI = lambda x: x.meta_ROI.str.replace("_meta_ROI", ""))
+                            .pivot(index=["stimulus_type", "relevance_type", "duration", "times"], columns="meta_ROI", values="data"))
 
-        averaged_by_condition.columns = averaged_by_condition.columns.get_level_values(0)
-        averaged_by_condition.reset_index(inplace=True)
+    averaged_by_condition.columns = averaged_by_condition.columns.get_level_values(0)
+    averaged_by_condition.reset_index(inplace=True)
 
-        # Save to CSV
-        averaged_by_condition.to_csv(output_file, index=False)
+    # Save to CSV
+    averaged_by_condition.to_csv(output_file, index=False)
 
 
 if __name__ == '__main__':

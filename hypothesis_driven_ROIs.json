@@ -14,11 +14,8 @@
     "S_front_sup"
   ],
   "IIT_ROIs": [
-    "G_and_S_occipital_inf",
     "G_cuneus",
-    "G_occipital_middle",
     "G_occipital_sup",
-    "G_oc-temp_lat-fusifor",
     "G_oc-temp_med-Lingual",
     "G_oc-temp_med-Parahip",
     "G_temporal_inf",
@@ -26,7 +23,6 @@
     "Pole_temporal",
     "S_calcarine",
     "S_intrapariet_and_P_trans",
-    "S_oc_middle_and_Lunatus",
     "S_oc_sup_and_transversal",
     "S_temporal_sup"
   ],

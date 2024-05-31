@@ -37,9 +37,10 @@ bids_root = opt.bids_root
 region_option = opt.region_option
 visit_id = opt.visit_id
 n_jobs = opt.n_jobs
+duration="1000ms"
 
 # Time series output path for this subject
-subject_time_series_path = op.join(bids_root, "derivatives", "MEG_time_series", f"sub-{subject_id}", f"ses-{visit_id}", "meg")
+time_series_path = op.join(bids_root, "derivatives", "MEG_time_series")
 output_feature_path = op.join(bids_root, "derivatives", "time_series_features")
 
 # Define ROI lookup table
@@ -48,44 +49,20 @@ if region_option == "hypothesis_driven":
               "proc-1": "GNWT",
               "proc-2": "IIT"}
     
-if op.isfile(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_1000ms.feather"):
+if op.isfile(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_{duration}.csv"):
     print(f"SPI results for sub-{subject_id} already exist. Skipping.")
     exit() 
 
 # Iterate over all the time-series files for this subject
 sample_TS_data_list = []
 
-os.chdir(subject_time_series_path)
-for TS_file in glob.glob("*.csv"):
-    subject_ID = TS_file.split("_")[0]
-    stimulus_type = TS_file.split("desc-")[1].split("_")[0]
-    relevance_type = TS_file.split(f"{stimulus_type}_")[1].split("_")[0]
-    duration = TS_file.split(f"{relevance_type}_")[1].split("_")[0]
-    meta_ROI = TS_file.split(f"{duration}_")[1].split("_meta")[0]
-    frequency_band = TS_file.split("freq_")[1].split("_TS")[0]
-
-    TS_data = (pd.read_csv(f"{TS_file}")
-               .assign(subject_ID=subject_ID,
-                       stimulus_type=stimulus_type,
-                       relevance_type=relevance_type,
-                       duration=duration,
-                       meta_ROI=meta_ROI,
-                       frequency_band=frequency_band))
-
-    sample_TS_data_list.append(TS_data)
-
-# Check that length is 72, and if not, exit
-if len(sample_TS_data_list) < 152:
-    print(f"Expected 152 time series files for sub-{subject_id}, but found {len(sample_TS_data_list)}. Exiting.")
-    exit()
-
-sample_TS_data = pd.concat(sample_TS_data_list)
-
-# Convert duration to milliseconds
-sample_TS_data['duration'] = sample_TS_data['duration'].str.replace('ms', '').astype(int)/1000
+sample_TS_data=pd.read_csv(f"{time_series_path}/sub-{subject_id}_ses-{visit_id}_meg_{duration}_all_time_series.csv")
+sample_TS_data['duration'] = sample_TS_data['duration'].str.replace('ms', '').astype(int)
+sample_TS_data['times'] = np.round(sample_TS_data['times']*1000)
+sample_TS_data['times'] = sample_TS_data['times'].astype(int)
 
 # Filter times to the duration range
-sample_TS_data_onset = sample_TS_data.query('times >= 0.0 and times < @sample_TS_data.duration')
+sample_TS_data_onset = sample_TS_data.query('times >= 0 and times < @sample_TS_data.duration')
 sample_TS_data_offset = sample_TS_data.query('times >= @sample_TS_data.duration')
 
 # Create list of dataframes for each stimulus_type, relevance_type, duration, and frequency_band
@@ -94,21 +71,24 @@ on_sample_TS_data_list = []
 off_sample_TS_data_list = []
 for stimulus_type in sample_TS_data_onset['stimulus_type'].unique():
     for relevance_type in sample_TS_data_onset['relevance_type'].unique():
-        for duration in [1.0]: # Only looking at the 1s stimulus to start with
+        for duration in [1000]:
         # for duration in sample_TS_data_onset['duration'].unique():
-            for frequency_band in sample_TS_data_onset['frequency_band'].unique():
-                TS_data_on = sample_TS_data_onset.query('stimulus_type == @stimulus_type and relevance_type == @relevance_type and duration == @duration and frequency_band == @frequency_band')
-                on_sample_TS_data_list.append(TS_data_on)
-                TS_data_off = sample_TS_data_offset.query('stimulus_type == @stimulus_type and relevance_type == @relevance_type and duration == @duration and frequency_band == @frequency_band')
-                off_sample_TS_data_list.append(TS_data_off)
+            TS_data_on = sample_TS_data_onset.query('stimulus_type == @stimulus_type and relevance_type == @relevance_type and duration == @duration')
+            if TS_data_on.empty:
+                print(f"Missing data for {stimulus_type}, {relevance_type}, {duration}")
+            on_sample_TS_data_list.append(TS_data_on)
+            TS_data_off = sample_TS_data_offset.query('stimulus_type == @stimulus_type and relevance_type == @relevance_type and duration == @duration')
+            off_sample_TS_data_list.append(TS_data_off)
 
-# Helper function to run pyspi for the given dataset 
-def run_pyspi_for_df(df, calc):
+def run_pyspi_for_df(subject_id, df, calc):
         # Make deepcopy of calc 
         calc_copy = deepcopy(calc)
 
         # Pivot so that the columns are meta_ROI and the rows are data
-        df_wide = df.pivot(index='meta_ROI', columns='times', values='data')
+        df_wide = (df.filter(items=['times', 'Category_Selective', 'GNWT', 'IIT'])
+                     .melt(id_vars='times', var_name='meta_ROI', value_name='data')
+                     .reset_index()
+                     .pivot(index='meta_ROI', columns='times', values='data'))
 
         # Convert to numpy array
         TS_array = df_wide.to_numpy()
@@ -137,13 +117,10 @@ def run_pyspi_for_df(df, calc):
                         .assign(stimulus_type = df['stimulus_type'].unique()[0],
                                 relevance_type = df['relevance_type'].unique()[0],
                                 duration = df['duration'].unique()[0],
-                                frequency_band = df['frequency_band'].unique()[0],
-                                subject_ID = df['subject_ID'].unique()[0])
+                                subject_ID = subject_id)
         )
 
         return SPI_res_long
-
-
 # Initialise an empty list for the results
 on_data_pyspi_list = []
 off_data_pyspi_list = []
@@ -167,16 +144,16 @@ calc = Calculator(subset='fast')
 
 # Run for "on" data
 for on_data in on_sample_TS_data_list:
-    on_data_pyspi = run_pyspi_for_df(on_data, calc).assign(stimulus = "on")
+    on_data_pyspi = run_pyspi_for_df(subject_id, on_data, calc).assign(stimulus = "on")
     on_data_pyspi_list.append(on_data_pyspi)
 on_data_pyspi_res = pd.concat(on_data_pyspi_list)
 
 # Run for "off" data
 for off_data in off_sample_TS_data_list:
-    off_data_pyspi = run_pyspi_for_df(off_data, calc).assign(stimulus = "off")
+    off_data_pyspi = run_pyspi_for_df(subject_id, off_data, calc).assign(stimulus = "off")
     off_data_pyspi_list.append(off_data_pyspi)
 off_data_pyspi_res = pd.concat(off_data_pyspi_list)
 
 # Concatenate the results and save to a feather file
 all_pyspi_res = pd.concat([on_data_pyspi_res, off_data_pyspi_res]).reset_index() 
-all_pyspi_res.to_feather(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_1000ms.feather")
+all_pyspi_res.to_csv(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_1000ms.csv", index=False)
