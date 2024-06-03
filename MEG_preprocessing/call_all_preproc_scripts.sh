@@ -103,7 +103,7 @@ input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list
 # Extract time series and frequency power across participants
 ##################################################################################################
 
-# input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list_filtered.txt
+input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list_filtered.txt
 
 # # Define the command
 n_jobs=4

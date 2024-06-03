@@ -61,9 +61,11 @@ sample_TS_data['duration'] = sample_TS_data['duration'].str.replace('ms', '').as
 sample_TS_data['times'] = np.round(sample_TS_data['times']*1000)
 sample_TS_data['times'] = sample_TS_data['times'].astype(int)
 
-# Filter times to the duration range
-sample_TS_data_onset = sample_TS_data.query('times >= 0 and times < @sample_TS_data.duration')
-sample_TS_data_offset = sample_TS_data.query('times >= @sample_TS_data.duration')
+# Filter times >= 0
+sample_TS_data = sample_TS_data.query('times >= 0')
+
+# Assign stimulus as on if times < duration and off if times >= duration
+sample_TS_data['stimulus'] = np.where(sample_TS_data['times'] < sample_TS_data['duration'], 'on', 'off')
 
 # Create list of dataframes for each stimulus_type, relevance_type, duration, and frequency_band
 # One list for 'on' (while stimulus is being presented) and another for 'off' (after stimulus is no longer being presented)
