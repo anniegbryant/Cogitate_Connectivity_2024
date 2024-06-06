@@ -1,0 +1,32 @@
+Warning: no access to tty (Bad file descriptor).
+Thus no job control in this shell.
+Can't load history: $< line too long.
+Now running preprocessing for CB042
+python3 /headnode1/abry4213/github/Cogitate_Connectivity_2024/feature_extraction/run_pyspi_for_subject.py --sub CB042 --visit_id 1 --bids_root /headnode1/abry4213/data/Cogitate_MEG_challenge --region_option hypothesis_driven --n_jobs 1
+Traceback (most recent call last):
+  File "/headnode1/abry4213/.local/lib/python3.6/site-packages/pandas/__init__.py", line 30, in <module>
+    from pandas._libs import hashtable as _hashtable, lib as _lib, tslib as _tslib
+  File "/headnode1/abry4213/.local/lib/python3.6/site-packages/pandas/_libs/__init__.py", line 13, in <module>
+    from pandas._libs.interval import Interval
+  File "pandas/_libs/interval.pyx", line 1, in init pandas._libs.interval
+  File "pandas/_libs/hashtable.pyx", line 1, in init pandas._libs.hashtable
+  File "pandas/_libs/missing.pyx", line 1, in init pandas._libs.missing
+  File "/headnode1/abry4213/.local/lib/python3.6/site-packages/pandas/_libs/tslibs/__init__.py", line 30, in <module>
+    from .conversion import OutOfBoundsTimedelta, localize_pydatetime
+  File "pandas/_libs/tslibs/conversion.pyx", line 1, in init pandas._libs.tslibs.conversion
+  File "pandas/_libs/tslibs/timezones.pyx", line 7, in init pandas._libs.tslibs.timezones
+  File "/headnode1/abry4213/.local/lib/python3.6/site-packages/dateutil/tz/__init__.py", line 2, in <module>
+    from .tz import *
+  File "/headnode1/abry4213/.local/lib/python3.6/site-packages/dateutil/tz/tz.py", line 19, in <module>
+    import six
+ModuleNotFoundError: No module named 'six'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/headnode1/abry4213/github/Cogitate_Connectivity_2024/feature_extraction/run_pyspi_for_subject.py", line 1, in <module>
+    import pandas as pd
+  File "/headnode1/abry4213/.local/lib/python3.6/site-packages/pandas/__init__.py", line 38, in <module>
+    ) from e
+ImportError: C extension: No module named 'six' not built. If you want to import pandas from the source directory, you may need to run 'python setup.py build_ext --inplace --force' to build the C extensions first.
+Can't load history: $< line too long.

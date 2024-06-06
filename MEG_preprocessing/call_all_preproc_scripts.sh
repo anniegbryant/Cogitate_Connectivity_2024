@@ -114,11 +114,6 @@ num_cores=10
 # -v input_model_file=$input_model_file,n_jobs=$n_jobs \
 # -l select=1:ncpus=$num_cores:mem=120GB:mpiprocs=$num_cores \
 # 7_extract_time_series.pbs"
-qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/MEG_extract_time_series_^array_index^.out \
--N MEG_extract_time_series \
--v input_model_file=$input_model_file,n_jobs=$n_jobs,line_to_read=34 \
--l select=1:ncpus=$num_cores:mem=120GB:mpiprocs=$num_cores \
-7_extract_time_series.pbs
 
 # echo $cmd
 
@@ -126,12 +121,12 @@ qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/ME
 # $cmd
 
 ##################################################################################################
-# Extract time series and frequency power across participants
+# Combine time series for participant
 ##################################################################################################
 
 # input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list_filtered.txt
 
-# # Define the command
+# Define the command
 # cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/MEG_combine_time_series_^array_index^.out \
 # -N MEG_combine_time_series \
 # -J 1-46 \
@@ -144,10 +139,10 @@ qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/ME
 # # Run the command
 # $cmd
 
-# # Combine all epoch-averaged results into one zipped file
-# bids_root=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/
-# time_series_file_path=$bids_root/derivatives/MEG_time_series
+# Combine all epoch-averaged results into one zipped file
+bids_root=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/
+time_series_file_path=$bids_root/derivatives/MEG_time_series
 
-# # File compression
-# cd ${time_series_file_path}
-# zip ${time_series_file_path}/all_epoch_averaged_time_series.zip sub-*_ses-*_meg_*_all_time_series.csv
+# File compression
+cd ${time_series_file_path}
+zip ${time_series_file_path}/all_epoch_averaged_time_series.zip sub-*_ses-*_meg_*_all_time_series.csv
