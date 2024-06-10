@@ -30,7 +30,7 @@ record="run"
 #################################### Preprocessing ####################################
 
 # Run the requested step
-cmd="python3 $Cogitate_repo_root/run_pyspi_for_subject.py --sub $subject --visit_id $visit --bids_root $bids_root --region_option hypothesis_driven --n_jobs $n_jobs"
+cmd="python3 $Cogitate_repo_root/run_pyspi_for_subject_averaged_epochs.py --sub $subject --visit_id $visit --bids_root $bids_root --region_option hypothesis_driven --n_jobs $n_jobs"
 
 echo $cmd 
 $cmd

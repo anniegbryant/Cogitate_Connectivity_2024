@@ -69,18 +69,16 @@ sample_TS_data['stimulus'] = np.where(sample_TS_data['times'] < sample_TS_data['
 
 # Create list of dataframes for each stimulus_type, relevance_type, duration, and frequency_band
 # One list for 'on' (while stimulus is being presented) and another for 'off' (after stimulus is no longer being presented)
-on_sample_TS_data_list = []
-off_sample_TS_data_list = []
-for stimulus_type in sample_TS_data_onset['stimulus_type'].unique():
-    for relevance_type in sample_TS_data_onset['relevance_type'].unique():
+sample_TS_data_list = []
+for stimulus_type in sample_TS_data['stimulus_type'].unique():
+    for relevance_type in sample_TS_data['relevance_type'].unique():
         for duration in [1000]:
-        # for duration in sample_TS_data_onset['duration'].unique():
-            TS_data_on = sample_TS_data_onset.query('stimulus_type == @stimulus_type and relevance_type == @relevance_type and duration == @duration')
-            if TS_data_on.empty:
-                print(f"Missing data for {stimulus_type}, {relevance_type}, {duration}")
-            on_sample_TS_data_list.append(TS_data_on)
-            TS_data_off = sample_TS_data_offset.query('stimulus_type == @stimulus_type and relevance_type == @relevance_type and duration == @duration')
-            off_sample_TS_data_list.append(TS_data_off)
+            for stimulus_presentation in ['on', 'off']:
+            # for duration in sample_TS_data['duration'].unique():
+                this_condition_data = sample_TS_data.query('stimulus_type == @stimulus_type and relevance_type == @relevance_type and duration == @duration and stimulus == @stimulus_presentation')
+                if this_condition_data.empty:
+                    print(f"Missing data for {stimulus_type}, {relevance_type}, {duration}, {stimulus_presentation}")
+                sample_TS_data_list.append(this_condition_data)
 
 def run_pyspi_for_df(subject_id, df, calc):
         # Make deepcopy of calc 
@@ -119,43 +117,23 @@ def run_pyspi_for_df(subject_id, df, calc):
                         .assign(stimulus_type = df['stimulus_type'].unique()[0],
                                 relevance_type = df['relevance_type'].unique()[0],
                                 duration = df['duration'].unique()[0],
+                                stimulus_presentation = df['stimulus'].unique()[0],
                                 subject_ID = subject_id)
         )
 
         return SPI_res_long
 # Initialise an empty list for the results
-on_data_pyspi_list = []
-off_data_pyspi_list = []
+pyspi_res_list = []
 
 # Initialise a base calculator
 calc = Calculator(subset='fast')
 
-# # Run for "on" data
-# on_data_pyspi_list = Parallel(n_jobs=n_jobs)(delayed(run_pyspi_for_df)(df=on_data, 
-#                                                             calc=calc)
-#                                             for on_data in on_sample_TS_data_list)
+# Run for data
+for dataframe in sample_TS_data_list:
+    dataframe_pyspi = run_pyspi_for_df(subject_id, dataframe, calc).assign(stimulus = "on")
+    pyspi_res_list.append(dataframe_pyspi)
 
-# on_data_pyspi_res = pd.concat(on_data_pyspi_list)
-
-# # Run for "off" data
-# off_data_pyspi_list = Parallel(n_jobs=n_jobs)(delayed(run_pyspi_for_df)(df=off_data, 
-#                                                             calc=calc)
-#                                             for off_data in off_sample_TS_data_list)
-
-# off_data_pyspi_res = pd.concat(off_data_pyspi_list)
-
-# Run for "on" data
-for on_data in on_sample_TS_data_list:
-    on_data_pyspi = run_pyspi_for_df(subject_id, on_data, calc).assign(stimulus = "on")
-    on_data_pyspi_list.append(on_data_pyspi)
-on_data_pyspi_res = pd.concat(on_data_pyspi_list)
-
-# Run for "off" data
-for off_data in off_sample_TS_data_list:
-    off_data_pyspi = run_pyspi_for_df(subject_id, off_data, calc).assign(stimulus = "off")
-    off_data_pyspi_list.append(off_data_pyspi)
-off_data_pyspi_res = pd.concat(off_data_pyspi_list)
 
 # Concatenate the results and save to a feather file
-all_pyspi_res = pd.concat([on_data_pyspi_res, off_data_pyspi_res]).reset_index() 
+all_pyspi_res = pd.concat(pyspi_res_list).reset_index() 
 all_pyspi_res.to_csv(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_1000ms.csv", index=False)
