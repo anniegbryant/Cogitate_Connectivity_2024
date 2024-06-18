@@ -4,24 +4,27 @@
 # Preprocessing [Artemis, batch array]
 ##################################################################################################
 
-# Define the batch job array command
-input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list.txt
+# User-define batch number
+batch_number=$1
 
-# # Step 1
-# cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/MEG_preproc_^array_index^.out \
-#    -N All_MEG_preproc \
-#    -J 1-48 \
-#    -l select=1:ncpus=1:mem=40GB:mpiprocs=1 \
-#    -v input_model_file=$input_model_file,step=1 \
-#    1_preprocess_MEG_subjects.pbs"
-# $cmd
+# Define the batch job array command
+input_model_file=/project/hctsa/annie/data/Cogitate_Batch2/MEG_Data/subject_list.txt
+
+# Step 1
+cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch2_MEG_preproc_^array_index^.out \
+   -N Batch2_MEG_preproc \
+   -J 1-52 \
+   -l select=1:ncpus=10:mem=40GB:mpiprocs=10 \
+   -v input_model_file=$input_model_file,batch_number=$batch_number,step=1 \
+   1_preprocess_MEG_subjects.pbs"
+$cmd
 
 # # Step 2
-# cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/MEG_preproc_^array_index^.out \
-#    -N All_MEG_preproc \
-#    -J 1-48 \
+# cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch2_MEG_preproc_^array_index^.out \
+#    -N Batch2_MEG_preproc \
+#    -J 1-52 \
 #    -l select=1:ncpus=1:mem=20GB:mpiprocs=1 \
-#    -v input_model_file=$input_model_file,step=2 \
+#    -v input_model_file=$input_model_file,batch_number=$batch_number,step=2 \
 #    1_preprocess_MEG_subjects.pbs"
 # $cmd
 
@@ -30,12 +33,12 @@ input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list
 ##################################################################################################
 
 # # Define the recon-all command loop
-# cat /project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list_filtered.txt | while read line 
+# cat /project/hctsa/annie/data/Cogitate_Batch2/MEG_Data/subject_list_filtered.txt | while read line 
 # do
 #    subject=$line
 #    cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/recon_all_${subject}.out \
 #    -N ${subject}_recon_all \
-#    -v subject=$subject \
+#    -v subject=$subject,batch_number=$batch_number \
 #    2_recon_all.pbs"
 
 #    # Run the command
@@ -51,7 +54,7 @@ input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list
 # cmd="qsub -o /headnode1/abry4213/github/Cogitate_Connectivity_2024/cluster_output/MEG_scalp_recon_^array_index^.out \
 #    -N All_scalp_recon \
 #    -J 1-48 \
-#    -v input_model_file=$input_model_file \
+#    -v input_model_file=$input_model_file,batch_number=$batch_number \
 #    3_scalp_recon.pbs"
 
 # $cmd
@@ -60,13 +63,13 @@ input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list
 # BEM
 ##################################################################################################
 
-# input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list_filtered.txt
+# input_model_file=/project/hctsa/annie/data/Cogitate_Batch2/MEG_Data/subject_list_filtered.txt
 
 # # Define the command
 # cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/MEG_BEM_^array_index^.out \
 # -N BEM \
 # -J 1-46 \
-# -v input_model_file=$input_model_file \
+# -v input_model_file=$input_model_file,batch_number=$batch_number \
 # 4_BEM.pbs"
 
 # # Run the command
@@ -76,13 +79,13 @@ input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list
 # Subject-specific source localization 
 ##################################################################################################
 
-# input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list_filtered.txt
+# input_model_file=/project/hctsa/annie/data/Cogitate_Batch2/MEG_Data/subject_list_filtered.txt
 
 # # Define the command
 # cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/MEG_subject_source_localization_^array_index^.out \
 # -N subject_source_localization \
 # -J 1-46 \
-# -v input_model_file=$input_model_file \
+# -v input_model_file=$input_model_file,batch_number=$batch_number \
 # 5_subject_source_localization.pbs"
 
 # # Run the command
@@ -94,6 +97,7 @@ input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list
 
 # cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/global_source_localization.out \
 # -N global_source_localization \
+# -v batch_number=$batch_number \
 # 6_global_source_localization.pbs"
 
 # # Run the command
@@ -103,7 +107,7 @@ input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list
 # Extract time series and frequency power across participants
 ##################################################################################################
 
-input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list_filtered.txt
+input_model_file=/project/hctsa/annie/data/Cogitate_Batch2/MEG_Data/subject_list_filtered.txt
 
 # # Define the command
 n_jobs=4
@@ -111,7 +115,7 @@ num_cores=10
 # cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/MEG_extract_time_series_^array_index^.out \
 # -N MEG_extract_time_series \
 # -J 1-46 \
-# -v input_model_file=$input_model_file,n_jobs=$n_jobs \
+# -v input_model_file=$input_model_file,batch_number=$batch_number,n_jobs=$n_jobs \
 # -l select=1:ncpus=$num_cores:mem=120GB:mpiprocs=$num_cores \
 # 7_extract_time_series.pbs"
 
@@ -124,13 +128,13 @@ num_cores=10
 # Combine time series for participant
 ##################################################################################################
 
-# input_model_file=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/subject_list_filtered.txt
+# input_model_file=/project/hctsa/annie/data/Cogitate_Batch2/MEG_Data/subject_list_filtered.txt
 
 # Define the command
 # cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/MEG_combine_time_series_^array_index^.out \
 # -N MEG_combine_time_series \
 # -J 1-46 \
-# -v input_model_file=$input_model_file \
+# -v input_model_file=$input_model_file,batch_number=$batch_number \
 # -l select=1:ncpus=1:mem=10GB:mpiprocs=1 \
 # 8_combine_time_series.pbs"
 
@@ -139,10 +143,10 @@ num_cores=10
 # # Run the command
 # $cmd
 
-# Combine all epoch-averaged results into one zipped file
-bids_root=/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/
-time_series_file_path=$bids_root/derivatives/MEG_time_series
+# # Combine all epoch-averaged results into one zipped file
+# bids_root=/project/hctsa/annie/data/Cogitate_Batch2/MEG_Data/
+# time_series_file_path=$bids_root/derivatives/MEG_time_series
 
-# File compression
-cd ${time_series_file_path}
-zip ${time_series_file_path}/all_epoch_averaged_time_series.zip sub-*_ses-*_meg_*_all_time_series.csv
+# # File compression
+# cd ${time_series_file_path}
+# zip ${time_series_file_path}/all_epoch_averaged_time_series.zip sub-*_ses-*_meg_*_all_time_series.csv
