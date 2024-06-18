@@ -1,19 +1,15 @@
 import pandas as pd
 import numpy as np
-import pyspi
 from pyspi.calculator import Calculator
 import os.path as op
-import os
 from copy import deepcopy
-from joblib import Parallel, delayed
 import argparse
-import glob
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--sub',
                     type=str,
                     default='CB040',
-                    help='site_id + subject_id (e.g. "CB040")')
+                    help='subject_id (e.g. "CB040")')
 parser.add_argument('--visit_id',
                     type=str,
                     default='1',
@@ -26,6 +22,10 @@ parser.add_argument('--region_option',
                     type=str,
                     default='all',
                     help='Set of regions to use ("all" or "hypothesis_driven")')
+parser.add_argument('--duration',
+                    type=str,
+                    default='1000ms',
+                    help="Trial duration to compute (default is '1000ms')")
 parser.add_argument('--n_jobs',
                     type=int,
                     default=1,
@@ -37,7 +37,7 @@ bids_root = opt.bids_root
 region_option = opt.region_option
 visit_id = opt.visit_id
 n_jobs = opt.n_jobs
-duration="1000ms"
+duration = opt.duration
 
 # Time series output path for this subject
 time_series_path = op.join(bids_root, "derivatives", "MEG_time_series")
@@ -46,8 +46,8 @@ output_feature_path = op.join(bids_root, "derivatives", "time_series_features")
 # Define ROI lookup table
 if region_option == "hypothesis_driven":
     ROI_lookup = {"proc-0": "Category_Selective",
-              "proc-1": "GNWT",
-              "proc-2": "IIT"}
+                  "proc-1": "GNWT",
+                  "proc-2": "IIT"}
     
 if op.isfile(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_{duration}.csv"):
     print(f"SPI results for sub-{subject_id} already exist. Skipping.")
@@ -72,7 +72,7 @@ sample_TS_data['stimulus'] = np.where(sample_TS_data['times'] < sample_TS_data['
 sample_TS_data_list = []
 for stimulus_type in sample_TS_data['stimulus_type'].unique():
     for relevance_type in sample_TS_data['relevance_type'].unique():
-        for duration in [1000]:
+        for duration in sample_TS_data['duration'].unique():
             for stimulus_presentation in ['on', 'off']:
             # for duration in sample_TS_data['duration'].unique():
                 this_condition_data = sample_TS_data.query('stimulus_type == @stimulus_type and relevance_type == @relevance_type and duration == @duration and stimulus == @stimulus_presentation')
@@ -133,7 +133,6 @@ for dataframe in sample_TS_data_list:
     dataframe_pyspi = run_pyspi_for_df(subject_id, dataframe, calc).assign(stimulus = "on")
     pyspi_res_list.append(dataframe_pyspi)
 
-
 # Concatenate the results and save to a feather file
 all_pyspi_res = pd.concat(pyspi_res_list).reset_index() 
-all_pyspi_res.to_csv(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_1000ms.csv", index=False)
+all_pyspi_res.to_csv(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_{duration}.csv", index=False)

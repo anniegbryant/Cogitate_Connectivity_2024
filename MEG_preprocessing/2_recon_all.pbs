@@ -32,6 +32,5 @@ export PATH="$FREESURFER_HOME/fsfast/bin:$PATH"
 
 reconcmd="recon-all -all -subjid sub-${subject} -i ${bids_root}/sub-${subject}/ses-1/anat/sub-${subject}_ses-1_T1w.nii.gz -sd /project/hctsa/annie/data/Cogitate_Batch${batch_number}/MEG_Data/derivatives/fs"
 
-# echo $reconcmd
-
-# $reconcmd
+echo $reconcmd
+$reconcmd

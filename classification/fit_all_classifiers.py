@@ -10,15 +10,29 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from copy import deepcopy
 import itertools
+import argparse
 
 # add path to classification analysis functions
 from mixed_sigmoid_normalisation import MixedSigmoidScaler
 
-# Define data paths
-pyspi_res_path = "/Users/abry4213/data/Cogitate_MEG_challenge/derivatives/time_series_features"
-classification_res_path = "/Users/abry4213/data/Cogitate_MEG_challenge/derivatives/classification_results"
+parser=argparse.ArgumentParser()
+parser.add_argument('--bids_root',
+                    type=str,
+                    default='/project/hctsa/annie/data/Cogitate_Batch1/MEG_Data/',
+                    help='Path to the BIDS root directory')
+parser.add_argument('--n_jobs',
+                    type=int,
+                    default=1,
+                    help='Number of concurrent processing jobs')
+opt=parser.parse_args()
 
-SPI_directionality_info = pd.read_csv("/Users/abry4213/github/Cogitate_Connectivity_2024/feature_extraction/pyspi_SPI_info.csv")
+bids_root = opt.bids_root
+n_jobs = opt.n_jobs
+
+# Define data paths
+pyspi_res_path = f"{bids_root}/derivatives/time_series_features"
+classification_res_path = f"{bids_root}/derivatives/classification_results"
+SPI_directionality_info = pd.read_csv("../feature_extraction/pyspi_SPI_info.csv")
 
 # Load in pyspi results
 all_pyspi_res_list = []
@@ -115,7 +129,7 @@ if not os.path.isfile(f"{classification_res_path}/comparing_between_stimulus_typ
 
                         group_stratified_CV = StratifiedGroupKFold(n_splits = 10, shuffle = True, random_state=127)
 
-                        this_classifier_res = cross_validate(pipe, X, y, groups=groups, cv=group_stratified_CV, scoring="accuracy", n_jobs=1, 
+                        this_classifier_res = cross_validate(pipe, X, y, groups=groups, cv=group_stratified_CV, scoring="accuracy", n_jobs=n_jobs, 
                                                                     return_estimator=False, return_train_score=False)["test_score"].mean()
                         
                         this_SPI_combo_df = pd.DataFrame({"SPI": [SPI], 
@@ -131,7 +145,6 @@ if not os.path.isfile(f"{classification_res_path}/comparing_between_stimulus_typ
 
     comparing_between_stimulus_types_classification_results = pd.concat(comparing_between_stimulus_types_classification_results_list).reset_index(drop=True)
     comparing_between_stimulus_types_classification_results.to_csv(f"{classification_res_path}/comparing_between_stimulus_types_classification_results.csv", index=False)
-
 
 # Comparing between relevance types
 if not os.path.isfile(f"{classification_res_path}/comparing_between_relevance_types_classification_results.csv"):
@@ -198,7 +211,7 @@ if not os.path.isfile(f"{classification_res_path}/comparing_between_relevance_ty
 
                 group_stratified_CV = StratifiedGroupKFold(n_splits = 10, shuffle = True, random_state=127)
 
-                this_classifier_res = cross_validate(pipe, X, y, groups=groups, cv=group_stratified_CV, scoring="accuracy", n_jobs=1, 
+                this_classifier_res = cross_validate(pipe, X, y, groups=groups, cv=group_stratified_CV, scoring="accuracy", n_jobs=n_jobs, 
                                                             return_estimator=False, return_train_score=False)["test_score"].mean()
                 
                 this_SPI_relevance_results_df = pd.DataFrame({"SPI": [SPI], 
