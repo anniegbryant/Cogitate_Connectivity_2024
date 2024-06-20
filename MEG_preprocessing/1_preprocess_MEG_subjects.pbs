@@ -39,6 +39,9 @@ export PATH="$FREESURFER_HOME/fsfast/bin:$PATH"
 #################################### Preprocessing ####################################
 
 # Run the requested step
-python3 $MEG_repo_root/meeg/preprocessing/P99_run_preproc.py \
+cmd="python3 $MEG_repo_root/meeg/preprocessing/P99_run_preproc.py \
 --sub $subject --visit $visit --record $record --step $step \
---bids_root $bids_root
+--bids_root $bids_root"
+
+echo $cmd 
+$cmd
