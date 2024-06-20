@@ -1,0 +1,240 @@
+Warning: no access to tty (Bad file descriptor).
+Thus no job control in this shell.
+Can't load history: $< line too long.
+Now running source localization for CA150
+LOADEDMODULES=pbspro:Anaconda3-5.1.0 ;export LOADEDMODULES;PATH=/usr/physics/python/anaconda3/bin:/usr/lib64/qt-3.3/bin:/headnode1/abry4213/software/freesurfer/bin:/headnode1/abry4213/software/freesurfer/fsfast/bin:/headnode1/abry4213/software/freesurfer/bin:/headnode1/abry4213/.vscode-server/cli/servers/Stable-31c37ee8f63491495ac49e43b8544550fbae4533/server/bin/remote-cli:/usr/physics/pbspro/bin:/headnode1/abry4213/bin:/usr/physics/bin:/bin:/usr/local/bin:/usr/share/Modules/bin:/usr/bin:/opt/dell/srvadmin/bin:/usr/local/sbin:/usr/sbin ;export PATH;_LMFILES_=/usr/physics/share/modulefiles/pbspro:/usr/physics/share/modulefiles/Anaconda3-5.1.0 ;export _LMFILES_;1. Creating a dense scalp tessellation with mkheadsurf...
+Running subprocess: mkheadsurf -subjid sub-CA150 -srcvol T1.mgz
+INFO: log file is /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/scripts/mkheadsurf.log
+
+--------------------------------
+
+Thu Jun 20 21:12:57 AEST 2024
+
+/headnode1/abry4213
+
+mri_seghead --invol /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/mri/T1.mgz --outvol /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/mri/seghead.mgz --fill 1 --thresh1 20 --thresh2 20 --nhitsmin 2
+
+--------------------------------
+
+input volume:  /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/mri/T1.mgz
+
+output volume: /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/mri/seghead.mgz
+
+threshold1:    20
+
+threshold2:    20
+
+nhitsmin:      2
+
+fill value:    1
+
+Loading input volume
+
+Filling Columns
+
+Filling Rows
+
+Filling Slices
+
+Merging and Inverting
+
+Growing
+
+Counting
+
+N Head Voxels = 4140872
+
+N Back Voxels = 12636344
+
+Avg. Back Intensity = 1.909297
+
+Max. Back Intensity = 235.000000
+
+Writing output
+
+Done
+
+--------------------------------
+
+Thu Jun 20 21:13:06 AEST 2024
+
+/headnode1/abry4213
+
+mri_tessellate /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/mri/seghead.mgz 1 /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/surf/lh.seghead
+
+--------------------------------
+
+7.1.1
+
+  7.1.1
+
+slice 30: 6034 vertices, 6188 faces
+
+slice 40: 16010 vertices, 16323 faces
+
+slice 50: 30568 vertices, 31051 faces
+
+slice 60: 45199 vertices, 45688 faces
+
+slice 70: 57012 vertices, 57512 faces
+
+slice 80: 68058 vertices, 68598 faces
+
+slice 90: 80247 vertices, 80887 faces
+
+slice 100: 92295 vertices, 92900 faces
+
+slice 110: 103170 vertices, 103796 faces
+
+slice 120: 114006 vertices, 114649 faces
+
+slice 130: 124103 vertices, 124769 faces
+
+slice 140: 134159 vertices, 134813 faces
+
+slice 150: 143536 vertices, 144194 faces
+
+slice 160: 152308 vertices, 152939 faces
+
+slice 170: 161028 vertices, 161658 faces
+
+slice 180: 170361 vertices, 170976 faces
+
+slice 190: 180491 vertices, 181107 faces
+
+slice 200: 191557 vertices, 192205 faces
+
+slice 210: 205680 vertices, 206308 faces
+
+slice 220: 214667 vertices, 215128 faces
+
+slice 230: 216944 vertices, 217339 faces
+
+slice 240: 217590 vertices, 217940 faces
+
+slice 250: 217590 vertices, 217940 faces
+
+using the conformed surface RAS to save vertex points...
+
+writing /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/surf/lh.seghead
+
+using vox2ras matrix:
+
+-1.00000   0.00000   0.00000   128.00000;
+
+ 0.00000   0.00000   1.00000  -128.00000;
+
+ 0.00000  -1.00000   0.00000   128.00000;
+
+ 0.00000   0.00000   0.00000   1.00000;
+
+--------------------------------
+
+Thu Jun 20 21:13:09 AEST 2024
+
+/headnode1/abry4213
+
+mris_smooth -n 10 -b area.seghead -c curv.seghead /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/surf/lh.seghead /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/surf/lh.seghead
+
+--------------------------------
+
+smoothing for 10 iterations
+
+smoothing surface tessellation for 10 iterations...
+
+smoothing complete - recomputing first and second fundamental forms...
+
+writing smoothed curvature to /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/surf/lh.curv.seghead
+
+writing smoothed area to /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/surf/lh.area.seghead
+
+--------------------------------
+
+Thu Jun 20 21:13:18 AEST 2024
+
+/headnode1/abry4213
+
+mris_inflate -n 10 -sulc sulc.seghead /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/surf/lh.seghead /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/surf/lh.seghead.inflated
+
+--------------------------------
+
+niterations = 10
+
+sulc name = sulc.seghead
+
+Reading /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/surf/lh.seghead
+
+avg radius = 102.2 mm, total surface area = 146877 mm^2
+
+step 000: RMS=0.073 (target=0.015)   step 005: RMS=0.055 (target=0.015)   step 010: RMS=0.048 (target=0.015)   step 015: RMS=0.044 (target=0.015)   step 020: RMS=0.041 (target=0.015)   step 025: RMS=0.038 (target=0.015)   step 030: RMS=0.037 (target=0.015)   step 035: RMS=0.036 (target=0.015)   step 040: RMS=0.035 (target=0.015)   step 045: RMS=0.034 (target=0.015)   step 050: RMS=0.034 (target=0.015)   step 055: RMS=0.034 (target=0.015)   step 060: RMS=0.033 (target=0.015)   writing inflated surface to /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/surf/lh.seghead.inflated
+
+writing sulcal depths to /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/surf/lh.sulc.seghead
+
+
+
+inflation complete.
+
+inflation took 1.2 minutes
+
+mris_inflate utimesec    67.950400
+
+mris_inflate stimesec    4.963933
+
+mris_inflate ru_maxrss   334392
+
+mris_inflate ru_ixrss    0
+
+mris_inflate ru_idrss    0
+
+mris_inflate ru_isrss    0
+
+mris_inflate ru_minflt   1622794
+
+mris_inflate ru_majflt   0
+
+mris_inflate ru_nswap    0
+
+mris_inflate ru_inblock  0
+
+mris_inflate ru_oublock  11920
+
+mris_inflate ru_msgsnd   0
+
+mris_inflate ru_msgrcv   0
+
+mris_inflate ru_nsignals 0
+
+mris_inflate ru_nvcsw    199
+
+mris_inflate ru_nivcsw   153
+
+Started at: Thu Jun 20 21:12:57 AEST 2024
+
+Ended   at: Thu Jun 20 21:14:31 AEST 2024
+
+mkheadsurf done
+
+2. Creating /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/bem/sub-CA150-head-dense.fif ...
+outer skin  CM is  -0.79  -9.24 -18.42 mm
+Surfaces passed the basic topology checks.
+3. Creating medium tessellation...
+3.1 Decimating the dense tessellation...
+3.2 Creating /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/bem/sub-CA150-head-medium.fif
+/headnode1/abry4213/github/cogitate-msp1/coglib/meeg/source_modelling/S00a_scalp_surfaces.py:106: RuntimeWarning: Surface outer skin  has topological defects: 6 / 29999 vertices have fewer than three neighboring triangles [1138, 4800, 5576, 7752, 8514, 9658]
+
+Consider using --force as an additional input parameter.
+  mnebem.make_scalp_surfaces(subject,
+outer skin  CM is  -3.21  -5.97 -33.24 mm
+Surfaces passed the basic topology checks.
+4. Creating sparse tessellation...
+4.1 Decimating the dense tessellation...
+4.2 Creating /headnode1/abry4213/data/Cogitate_Batch2/MEG_Data/derivatives/fs/sub-CA150/bem/sub-CA150-head-sparse.fif
+/headnode1/abry4213/github/cogitate-msp1/coglib/meeg/source_modelling/S00a_scalp_surfaces.py:106: RuntimeWarning: Surface outer skin  has topological defects: 1 / 2499 vertices have fewer than three neighboring triangles [542]
+
+Consider using --force as an additional input parameter.
+  mnebem.make_scalp_surfaces(subject,
+outer skin  CM is  -3.05  -7.06 -29.55 mm
+/headnode1/abry4213/github/cogitate-msp1/coglib/meeg/source_modelling/S00a_scalp_surfaces.py:106: RuntimeWarning: Surface outer skin  is not complete (sum of solid angles yielded 1.0000356740538359, should be 1.)
+  mnebem.make_scalp_surfaces(subject,
+Surfaces passed the basic topology checks.
+Can't load history: $< line too long.

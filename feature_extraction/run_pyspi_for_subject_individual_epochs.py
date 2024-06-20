@@ -49,46 +49,52 @@ if region_option == "hypothesis_driven":
               "proc-1": "GNWT",
               "proc-2": "IIT"}
     
-if op.isfile(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_{duration}.csv"):
+if op.isfile(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_individual_epochs_{duration}.csv"):
     print(f"SPI results for sub-{subject_id} already exist. Skipping.")
     exit() 
 
-# Iterate over all the time-series files for this subject
-sample_TS_data_list = []
+# Initialise a base calculator
+calc = Calculator(subset='fast')
 
-sample_TS_data=pd.read_csv(f"{time_series_path}/sub-{subject_id}_ses-{visit_id}_meg_{duration}_all_time_series.csv")
-sample_TS_data['duration'] = sample_TS_data['duration'].str.replace('ms', '').astype(int)
-sample_TS_data['times'] = np.round(sample_TS_data['times']*1000)
-sample_TS_data['times'] = sample_TS_data['times'].astype(int)
+all_epoch_files = [f for f in os.listdir(f"{time_series_path}/sub-{subject_id}_ses-{visit_id}_epochs") if "GNWT" in f]
+meta_ROI_list = ["IIT", "GNWT", "Category_Selective"]
 
-# Filter times >= 0
-sample_TS_data = sample_TS_data.query('times >= 0')
+all_pyspi_results_for_this_subject_list = []
 
-# Assign stimulus as on if times < duration and off if times >= duration
-sample_TS_data['stimulus'] = np.where(sample_TS_data['times'] < sample_TS_data['duration'], 'on', 'off')
+for csv_file in all_epoch_files:
+    stimulus_type, relevance, duration, epoch_number = csv_file.split("_")[0:4]
 
-# Create list of dataframes for each stimulus_type, relevance_type, duration, and frequency_band
-# One list for 'on' (while stimulus is being presented) and another for 'off' (after stimulus is no longer being presented)
-sample_TS_data_list = []
-for stimulus_type in sample_TS_data['stimulus_type'].unique():
-    for relevance_type in sample_TS_data['relevance_type'].unique():
-        for duration in [1000]:
-            for stimulus_presentation in ['on', 'off']:
-            # for duration in sample_TS_data['duration'].unique():
-                this_condition_data = sample_TS_data.query('stimulus_type == @stimulus_type and relevance_type == @relevance_type and duration == @duration and stimulus == @stimulus_presentation')
-                if this_condition_data.empty:
-                    print(f"Missing data for {stimulus_type}, {relevance_type}, {duration}, {stimulus_presentation}")
-                sample_TS_data_list.append(this_condition_data)
+    results_across_ROIs_list = []
 
-def run_pyspi_for_df(subject_id, df, calc):
-        # Make deepcopy of calc 
-        calc_copy = deepcopy(calc)
+    # Combine results across IIT, GNWT, and Category-Selective meta-ROIs
+    for meta_ROI in meta_ROI_list:
+        this_ROI_data = pd.read_csv(f"{time_series_path}/sub-{subject_id}_ses-{visit_id}_epochs/{stimulus_type}_{relevance}_{duration}_{epoch_number}_{meta_ROI}_meta_ROI.csv")
+        this_ROI_data['duration'] = this_ROI_data['duration'].str.replace('ms', '').astype(int)
+        this_ROI_data['times'] = np.round(this_ROI_data['times']*1000)
+        this_ROI_data['times'] = this_ROI_data['times'].astype(int)
+
+        # Filter times >= 0
+        this_ROI_data = this_ROI_data.query('times >= 0')
+
+        # Assign stimulus as on if times < duration and off if times >= duration
+        this_ROI_data['stimulus'] = np.where(this_ROI_data['times'] < this_ROI_data['duration'], 'on', 'off')
+
+        # Append to list
+        results_across_ROIs_list.append(this_ROI_data)
+
+    results_across_ROIs = pd.concat(results_across_ROIs_list, axis=0).reset_index()
+
+    # Iterate over onset vs. offset
+    for stimulus_presentation in ['on', 'off']:
+        results_across_ROIs_with_this_stim = results_across_ROIs.query("stimulus==@stimulus_presentation")
 
         # Pivot so that the columns are meta_ROI and the rows are data
-        df_wide = (df.filter(items=['times', 'Category_Selective', 'GNWT', 'IIT'])
-                     .melt(id_vars='times', var_name='meta_ROI', value_name='data')
-                     .reset_index()
-                     .pivot(index='meta_ROI', columns='times', values='data'))
+        df_wide = (results_across_ROIs_with_this_stim.filter(items=['times', 'meta_ROI', 'data'])
+                        .reset_index()
+                        .pivot(index='meta_ROI', columns='times', values='data'))
+
+        # Make deepcopy of calc 
+        calc_copy = deepcopy(calc)
 
         # Convert to numpy array
         TS_array = df_wide.to_numpy()
@@ -114,26 +120,15 @@ def run_pyspi_for_df(subject_id, df, calc):
                         .assign(meta_ROI_from = lambda x: x['meta_ROI_from'].map(ROI_lookup),
                                 meta_ROI_to = lambda x: x['meta_ROI_to'].map(ROI_lookup))
                         .filter(items=['SPI', 'meta_ROI_from', 'meta_ROI_to', 'value'])
-                        .assign(stimulus_type = df['stimulus_type'].unique()[0],
-                                relevance_type = df['relevance_type'].unique()[0],
-                                duration = df['duration'].unique()[0],
-                                stimulus_presentation = df['stimulus'].unique()[0],
+                        .assign(stimulus_type = stimulus_type,
+                                stimulus_presentation = stimulus_presentation,
+                                relevance_type = relevance,
+                                duration = duration,
+                                epoch_number = epoch_number,
                                 subject_ID = subject_id)
         )
 
-        return SPI_res_long
-# Initialise an empty list for the results
-pyspi_res_list = []
+        all_pyspi_results_for_this_subject_list.append(SPI_res_long)
 
-# Initialise a base calculator
-calc = Calculator(subset='fast')
-
-# Run for data
-for dataframe in sample_TS_data_list:
-    dataframe_pyspi = run_pyspi_for_df(subject_id, dataframe, calc).assign(stimulus = "on")
-    pyspi_res_list.append(dataframe_pyspi)
-
-
-# Concatenate the results and save to a feather file
-all_pyspi_res = pd.concat(pyspi_res_list).reset_index() 
-all_pyspi_res.to_csv(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_1000ms.csv", index=False)
+all_pyspi_results_for_this_subject = pd.concat(all_pyspi_results_for_this_subject_list, axis=0).reset_index()
+all_pyspi_results_for_this_subject.to_csv(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_individual_epochs_{duration}.csv", index=False)

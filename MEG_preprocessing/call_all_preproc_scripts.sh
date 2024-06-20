@@ -5,6 +5,7 @@ batch_number=$1
 
 # Define the batch job array command
 input_model_file=/project/hctsa/annie/github/Cogitate_Connectivity_2024/subject_list_batch${batch_number}.txt
+# input_model_file=/headnode1/abry4213/github/Cogitate_Connectivity_2024/subject_list_batch${batch_number}.txt
 
 ##################################################################################################
 # recon-all [Artemis, individual jobs]
@@ -39,7 +40,7 @@ input_model_file=/project/hctsa/annie/github/Cogitate_Connectivity_2024/subject_
 # # Step 2
 # cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_MEG_preproc_step2_^array_index^.out \
 #    -N Batch${batch_number}_MEG_preproc_2 \
-#    -J 37-52 \
+#    -J 1-52 \
 #    -l select=1:ncpus=1:mem=20GB:mpiprocs=1 \
 #    -v input_model_file=$input_model_file,batch_number=$batch_number,step=2 \
 #    1_preprocess_MEG_subjects.pbs"
@@ -49,11 +50,10 @@ input_model_file=/project/hctsa/annie/github/Cogitate_Connectivity_2024/subject_
 # Scalp reconstruction [Physics cluster]
 ##################################################################################################
 
-# Physics cluster
-# input_model_file=/headnode1/abry4213/data/Cogitate_MEG_challenge/subject_list.txt
-# cmd="qsub -o /headnode1/abry4213/github/Cogitate_Connectivity_2024/cluster_output/MEG_scalp_recon_^array_index^.out \
+# # Physics cluster
+# cmd="qsub -o /headnode1/abry4213/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_MEG_scalp_recon_^array_index^.out \
 #    -N All_scalp_recon \
-#    -J 1-48 \
+#    -J 1-52 \
 #    -v input_model_file=$input_model_file,batch_number=$batch_number \
 #    3_scalp_recon.pbs"
 # $cmd
@@ -62,15 +62,15 @@ input_model_file=/project/hctsa/annie/github/Cogitate_Connectivity_2024/subject_
 # BEM
 ##################################################################################################
 
-# # Define the command
-# cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/MEG_BEM_^array_index^.out \
-# -N BEM \
-# -J 1-46 \
-# -v input_model_file=$input_model_file,batch_number=$batch_number \
-# 4_BEM.pbs"
+# Define the command
+cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_MEG_BEM_^array_index^.out \
+-N BEM \
+-J 1-52 \
+-v input_model_file=$input_model_file,batch_number=$batch_number \
+4_BEM.pbs"
 
-# # Run the command
-# $cmd
+# Run the command
+$cmd
 
 ##################################################################################################
 # Subject-specific source localization 
