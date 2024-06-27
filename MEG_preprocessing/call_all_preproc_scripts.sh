@@ -36,6 +36,12 @@ input_model_file=/project/hctsa/annie/github/Cogitate_Connectivity_2024/subject_
 #    -v input_model_file=$input_model_file,batch_number=$batch_number,step=1 \
 #    1_preprocess_MEG_subjects.pbs"
 # $cmd
+cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_MEG_preproc_step1_^array_index^.out \
+   -N Batch${batch_number}_MEG_preproc_1 \
+   -l select=1:ncpus=1:mem=40GB:mpiprocs=1 \
+   -v line_to_read=52,input_model_file=$input_model_file,batch_number=$batch_number,step=1 \
+   1_preprocess_MEG_subjects.pbs"
+$cmd
 
 # # Step 2
 # cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_MEG_preproc_step2_^array_index^.out \
@@ -62,15 +68,15 @@ input_model_file=/project/hctsa/annie/github/Cogitate_Connectivity_2024/subject_
 # BEM
 ##################################################################################################
 
-# Define the command
-cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_MEG_BEM_^array_index^.out \
--N BEM \
--J 1-52 \
--v input_model_file=$input_model_file,batch_number=$batch_number \
-4_BEM.pbs"
+# # Define the command
+# cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_MEG_BEM_^array_index^.out \
+# -N BEM \
+# -J 1-52 \
+# -v input_model_file=$input_model_file,batch_number=$batch_number \
+# 4_BEM.pbs"
 
-# Run the command
-$cmd
+# # Run the command
+# $cmd
 
 ##################################################################################################
 # Subject-specific source localization 

@@ -49,7 +49,7 @@ factor = ['Category', 'Task_relevance', "Duration"]
 #               ['Relevant target', 'Relevant non-target', 'Irrelevant'],
 #               ['500ms', '1000ms', '1500ms']]
 conditions = [['face', 'object', 'letter', 'false'],
-              ['Relevant target', 'Relevant non-target', 'Irrelevant'],
+              ['Relevant non-target', 'Irrelevant'],
               ['1000ms']]
 
 # Helper function to create a dictionary of ROI labels depending on the type of region subset requested
