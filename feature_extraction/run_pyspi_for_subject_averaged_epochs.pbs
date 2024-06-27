@@ -23,14 +23,14 @@ echo "Now running preprocessing for $subject"
 
 # Call preprocessing script
 Cogitate_repo_root=/headnode1/abry4213/github/Cogitate_Connectivity_2024/feature_extraction
-bids_root=/headnode1/abry4213/data/Cogitate_MEG_challenge
+bids_root=/headnode1/abry4213/data/Cogitate_Batch${batch_number}/MEG_Data/
 visit="1"
 record="run"
 
 #################################### Preprocessing ####################################
 
 # Run the requested step
-cmd="python3 $Cogitate_repo_root/run_pyspi_for_subject_averaged_epochs.py --sub $subject --visit_id $visit --bids_root $bids_root --region_option hypothesis_driven --n_jobs $n_jobs"
+cmd="python3 $Cogitate_repo_root/run_pyspi_for_subject_averaged_epochs.py --sub $subject --visit_id $visit --bids_root $bids_root --region_option hypothesis_driven"
 
 echo $cmd 
 $cmd

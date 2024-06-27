@@ -26,17 +26,12 @@ parser.add_argument('--duration',
                     type=str,
                     default='1000ms',
                     help="Trial duration to compute (default is '1000ms')")
-parser.add_argument('--n_jobs',
-                    type=int,
-                    default=1,
-                    help='Number of concurrent processing jobs')
 opt=parser.parse_args()
 
 subject_id = opt.sub 
 bids_root = opt.bids_root
 region_option = opt.region_option
 visit_id = opt.visit_id
-n_jobs = opt.n_jobs
 duration = opt.duration
 
 # Time series output path for this subject
