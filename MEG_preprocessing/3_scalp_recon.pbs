@@ -29,7 +29,7 @@ export bids_root=/headnode1/abry4213/data/Cogitate_Batch${batch_number}/MEG_Data
 export SUBJECTS_DIR=${bids_root}/derivatives/fs
 export FREESURFER_HOME=/headnode1/abry4213/software/freesurfer/7.1.1
 source $FREESURFER_HOME/SetUpFreeSurfer.sh
-export PATH="$FREESURFER_HOME/bin:$FREESURFER_HOME/fsfast/bin"
+export PATH="$FREESURFER_HOME/bin:$FREESURFER_HOME/fsfast/bin:$PATH"
 
 visit="1"
 record="run"

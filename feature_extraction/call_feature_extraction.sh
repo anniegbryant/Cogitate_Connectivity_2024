@@ -25,11 +25,10 @@ input_model_file=/headnode1/abry4213/github/Cogitate_Connectivity_2024/subject_l
 ##################################################################################################
 
 # Individual epochs
-cmd="qsub -o /headnode1/abry4213/github/Cogitate_Connectivity_2024/cluster_output/pyspi_for_individual_epochs_^array_index^_fast.out \
-   -N pyspi_individual_epochs \
-   -J 4-5 \
-   -l select=1:ncpus=1:mem=20GB:mpiprocs=1 \
-   -v input_model_file=$input_model_file,batch_number=$batch_number \
-   run_pyspi_for_subject_individual_epochs.pbs"
-$cmd
-
+# cmd="qsub -o /headnode1/abry4213/github/Cogitate_Connectivity_2024/cluster_output/pyspi_for_individual_epochs_^array_index^_fast.out \
+#    -N pyspi_individual_epochs \
+#    -J 1-52 \
+#    -l select=1:ncpus=1:mem=20GB:mpiprocs=1 \
+#    -v input_model_file=$input_model_file,batch_number=$batch_number \
+#    run_pyspi_for_subject_individual_epochs.pbs"
+# $cmd
