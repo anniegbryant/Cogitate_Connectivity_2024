@@ -1,0 +1,27 @@
+#!/bin/bash
+#PBS -j oe
+#PBS -N classification_individual_epochs
+#PBS -l walltime=24:00:00
+#PBS -l select=1:ncpus=10:mem=20GB:mpiprocs=10
+#PBS -V
+#PBS -o /headnode1/abry4213/github/Cogitate_Connectivity_2024/cluster_output/all_pyspi_classification_res.out
+
+echo "Now running subject-level classification"
+
+# Physics modules
+# module load Anaconda3-5.1.0
+/usr/physics/Modules/3.2.8/bin/modulecmd bash load Anaconda3-5.1.0 --silent
+source /usr/physics/python/anaconda3/etc/profile.d/conda.sh 
+conda activate pyspi
+
+# Path locations
+export bids_root=/headnode1/abry4213/data/Cogitate_Batch${batch_number}/MEG_Data/
+export classification_code_dir=/headnode1/abry4213/github/Cogitate_Connectivity_2024/classification
+export SPI_directionality_file=/headnode1/abry4213/github/Cogitate_Connectivity_2024/feature_extraction/pyspi_SPI_info.csv
+
+################################## Source modelling ###################################
+
+# Scalp reconstruction
+python3 $classification_code_dir/fit_all_classifiers.py --bids_root $bids_root --n_jobs 10 \
+    --SPI_directionality_file $SPI_directionality_file \
+    --classification_type $classification_type

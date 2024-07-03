@@ -41,7 +41,7 @@ duration="1000ms"
 
 # Time series output path for this subject
 time_series_path = op.join(bids_root, "derivatives", "MEG_time_series")
-output_feature_path = op.join(bids_root, "derivatives", "time_series_features")
+output_feature_path = op.join(bids_root, "derivatives", "time_series_features/individual_epochs")
 
 # Define ROI lookup table
 if region_option == "hypothesis_driven":

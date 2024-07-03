@@ -37,15 +37,6 @@ input_model_file=/project/hctsa/annie/github/Cogitate_Connectivity_2024/subject_
 #    1_preprocess_MEG_subjects.pbs"
 # $cmd
 
-for line_to_read in 29; do 
-    cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_MEG_preproc_step1_${line_to_read}.out \
-    -N Batch${batch_number}_MEG_preproc_1 \
-    -l select=1:ncpus=1:mem=40GB:mpiprocs=1 \
-    -v line_to_read=$line_to_read,input_model_file=$input_model_file,batch_number=$batch_number,step=1 \
-    1_preprocess_MEG_subjects.pbs"
-    $cmd
-done
-
 # # Step 2
 # cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_MEG_preproc_step2_^array_index^.out \
 #    -N Batch${batch_number}_MEG_preproc_2 \
@@ -54,6 +45,7 @@ done
 #    -v input_model_file=$input_model_file,batch_number=$batch_number,step=2 \
 #    1_preprocess_MEG_subjects.pbs"
 # $cmd
+
 
 ##################################################################################################
 # Scalp reconstruction [Physics cluster]
@@ -126,15 +118,14 @@ n_jobs=4
 # # Run the command
 # $cmd
 
-
-# for line_to_read in 22 29 50; do 
-#     cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_MEG_extract_time_series_${line_to_read}.out \
-#     -N Batch${batch_number}_MEG_extract_time_series \
-#     -l select=1:ncpus=1:mem=40GB:mpiprocs=1 \
-#     -v line_to_read=$line_to_read,input_model_file=$input_model_file,batch_number=$batch_number,n_jobs=$n_jobs \
-#     7_extract_time_series.pbs"
-#     $cmd
-# done
+for line_to_read in 14 20; do 
+    cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_MEG_extract_time_series_${line_to_read}.out \
+    -N Batch${batch_number}_MEG_extract_time_series \
+    -l select=1:ncpus=1:mem=80GB:mpiprocs=1 \
+    -v line_to_read=$line_to_read,input_model_file=$input_model_file,batch_number=$batch_number,n_jobs=$n_jobs \
+    7_extract_time_series.pbs"
+    $cmd
+done
 
 ##################################################################################################
 # Combine time series for participant
@@ -153,11 +144,10 @@ n_jobs=4
 # # Run the command
 # $cmd
 
-
 # for line_to_read in 29; do 
 #     cmd="qsub -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_MEG_combine_time_series_${line_to_read}.out \
 #     -N Batch${batch_number}_MEG_combine_time_series \
-#     -l select=1:ncpus=1:mem=40GB:mpiprocs=1 \
+#     -l select=1:ncpus=1:mem=20GB:mpiprocs=1 \
 #     -v line_to_read=$line_to_read,input_model_file=$input_model_file,batch_number=$batch_number \
 #     8_combine_time_series.pbs"
 #     $cmd

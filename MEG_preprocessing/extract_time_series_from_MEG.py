@@ -208,15 +208,23 @@ def fit_cov_and_inverse(subject_id, visit_id, factor, conditions, bids_root, dow
             pickle.dump(common_cov, f)
 
     # Make inverse operator
-    inverse_operator = mne.minimum_norm.make_inverse_operator(
-        epochs_final.info,
-        fwd, 
-        common_cov,
-        loose=.2,
-        depth=.8,
-        fixed=False,
-        rank=rank,
-        use_cps=True)
+    print("Computing inverse operator")
+    if os.path.isfile(f"{fwd_deriv_root}/sub-{subject_id}_ses-{visit_id}_task-{bids_task}_inverse_operator.pkl"):
+        with open(f"{fwd_deriv_root}/sub-{subject_id}_ses-{visit_id}_task-{bids_task}_inverse_operator.pkl", 'rb') as f:
+            inverse_operator = pickle.load(f)
+    else:
+        inverse_operator = mne.minimum_norm.make_inverse_operator(
+            epochs_final.info,
+            fwd, 
+            common_cov,
+            loose=.2,
+            depth=.8,
+            fixed=False,
+            rank=rank,
+            use_cps=True)
+        
+        with open(f"{fwd_deriv_root}/sub-{subject_id}_ses-{visit_id}_task-{bids_task}_inverse_operator.pkl", 'wb') as f:
+            pickle.dump(inverse_operator, f)
 
     # Find all combinations between variables' levels
     if len(factor) == 1:
@@ -228,6 +236,8 @@ def fit_cov_and_inverse(subject_id, visit_id, factor, conditions, bids_root, dow
         cond_combs = list(itertools.product(conditions[0],
                                             conditions[1],
                                             conditions[2]))
+        
+    print("Done finding final epochs and inverse operator.")
         
     return epochs_final, inverse_operator, cond_combs
 # Helper function to process condition combination 
@@ -245,7 +255,7 @@ def cond_comb_helper_process_by_epoch(cond_comb, epochs_final, inverse_operator,
     snr = 3.0
     lambda2 = 1.0 / snr ** 2
     stcs = apply_inverse_epochs(cond_epochs, inverse_operator,
-                                lambda2=1.0 / snr ** 2, verbose=False,
+                                lambda2=lambda2, verbose=False,
                                 method="dSPM", pick_ori="normal")
 
     # Extract time course for each stc
@@ -253,6 +263,7 @@ def cond_comb_helper_process_by_epoch(cond_comb, epochs_final, inverse_operator,
 
         # Find epoch number
         epoch_number = i+1
+        print(f"Extracting epoch number {epoch_number}")
 
         # Find stc
         stc = stcs[i]
@@ -328,9 +339,6 @@ def extract_all_epoch_TS(subject_id, visit_id, region_option, factor, conditions
     # Find epochs_rs, inverse_operator, cond_combs
     print("Now finding inverse operator")
     epochs_final, inverse_operator, cond_combs = fit_cov_and_inverse(subject_id, visit_id, factor, conditions, bids_root, downsample=False)
-
-    # extract time course in label with pca_flip mode
-    src = inverse_operator['src']
 
     # Loop over conditions of interest
     print("Now looping over task conditions")

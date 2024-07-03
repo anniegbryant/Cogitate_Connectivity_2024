@@ -36,7 +36,7 @@ duration = opt.duration
 
 # Time series output path for this subject
 time_series_path = op.join(bids_root, "derivatives", "MEG_time_series")
-output_feature_path = op.join(bids_root, "derivatives", "time_series_features")
+output_feature_path = op.join(bids_root, "derivatives", "time_series_features/averaged_epochs")
 
 # Define ROI lookup table
 if region_option == "hypothesis_driven":
@@ -73,6 +73,7 @@ for stimulus_type in sample_TS_data['stimulus_type'].unique():
                 this_condition_data = sample_TS_data.query('stimulus_type == @stimulus_type and relevance_type == @relevance_type and duration == @duration and stimulus == @stimulus_presentation')
                 if this_condition_data.empty:
                     print(f"Missing data for {stimulus_type}, {relevance_type}, {duration}, {stimulus_presentation}")
+                    continue
                 sample_TS_data_list.append(this_condition_data)
 
 def run_pyspi_for_df(subject_id, df, calc):
@@ -130,4 +131,4 @@ for dataframe in sample_TS_data_list:
 
 # Concatenate the results and save to a feather file
 all_pyspi_res = pd.concat(pyspi_res_list).reset_index() 
-all_pyspi_res.to_csv(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_{duration}.csv", index=False)
+all_pyspi_res.to_csv(f"{output_feature_path}/sub-{subject_id}_ses-{visit_id}_all_pyspi_results_{duration}ms.csv", index=False)

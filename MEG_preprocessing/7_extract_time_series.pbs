@@ -31,4 +31,3 @@ record="run"
 ################################# Source localization #################################
 
 python3 $Cogitate_repo_root/extract_time_series_from_MEG.py --sub $subject --bids_root $bids_root --n_jobs $n_jobs --region_option hypothesis_driven
-

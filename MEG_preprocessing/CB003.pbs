@@ -1,0 +1,27 @@
+#!/bin/bash
+#PBS -j oe
+#PBS -l walltime=12:00:00
+#PBS -l select=1:ncpus=10:mem=120GB:mpiprocs=10
+#PBS -P hctsa
+#PBS -V
+
+subject=CB003
+batch_number=2
+n_jobs=1
+
+echo "Now running source localization for $subject"
+
+# Artemis modules
+module load anaconda3
+module load python/3.9.15
+
+# Call preprocessing script
+MEG_repo_root=/project/hctsa/annie/github/cogitate-msp1/coglib
+Cogitate_repo_root=/project/hctsa/annie/github/Cogitate_Connectivity_2024/MEG_preprocessing
+bids_root=/project/hctsa/annie/data/Cogitate_Batch${batch_number}/MEG_Data/
+visit="1"
+record="run"
+
+################################# Source localization #################################
+
+python3 $Cogitate_repo_root/extract_time_series_from_MEG.py --sub $subject --bids_root $bids_root --n_jobs $n_jobs --region_option hypothesis_driven
