@@ -20,15 +20,6 @@ input_model_file=/headnode1/abry4213/github/Cogitate_Connectivity_2024/subject_l
 #    run_pyspi_for_subject_averaged_epochs.pbs"
 # $cmd
 
-for line_to_read in 36; do
-   cmd="qsub -o /headnode1/abry4213/github/Cogitate_Connectivity_2024/cluster_output/Cogitate_Batch${batch_number}_pyspi_averaged_${line_to_read}_fast.out \
-      -N fast_pyspi_MEG \
-      -l select=1:ncpus=1:mem=20GB:mpiprocs=1 \
-      -v line_to_read=$line_to_read,input_model_file=$input_model_file,batch_number=$batch_number \
-      run_pyspi_for_subject_averaged_epochs.pbs"
-   $cmd
-done
-
 ##################################################################################################
 # Running pyspi across subjects, individual epochs
 ##################################################################################################

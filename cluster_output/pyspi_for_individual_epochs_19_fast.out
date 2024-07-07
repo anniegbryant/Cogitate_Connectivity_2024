@@ -1,7 +1,0 @@
-Warning: no access to tty (Bad file descriptor).
-Thus no job control in this shell.
-Can't load history: $< line too long.
-Now running preprocessing for CA151
-python3 /headnode1/abry4213/github/Cogitate_Connectivity_2024/feature_extraction/run_pyspi_for_subject_individual_epochs.py --sub CA151 --visit_id 1 --bids_root /headnode1/abry4213/data/Cogitate_Batch1/MEG_Data/ --region_option hypothesis_driven
-SPI results for sub-CA151 already exist. Skipping.
-Can't load history: $< line too long.
