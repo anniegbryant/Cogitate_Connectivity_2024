@@ -1,0 +1,27 @@
+#!/bin/bash
+#PBS -j oe
+#PBS -P hctsa
+#PBS -N classification_individual_epochs
+#PBS -l walltime=24:00:00
+#PBS -V
+#PBS -o /project/hctsa/annie/github/Cogitate_Connectivity_2024/cluster_output/all_pyspi_classification_res.out
+
+echo "Now running group-averaged classification"
+
+# Load python
+conda3
+conda activate fmriprep
+module load python/3.9.15
+
+echo "Now running all pyspi classification"
+
+# Path locations
+export bids_root=/project/hctsa/annie/data/Cogitate_Batch${batch_number}/MEG_Data/
+export classification_code_dir=/project/hctsa/annie/github/Cogitate_Connectivity_2024/classification
+export SPI_directionality_file=/project/hctsa/annie/github/Cogitate_Connectivity_2024/feature_extraction/pyspi_SPI_info.csv
+
+################################## Call classifiers ###################################
+
+python3 $classification_code_dir/fit_classifiers.py --bids_root $bids_root --n_jobs $n_jobs \
+    --SPI_directionality_file $SPI_directionality_file \
+    --classification_type averaged

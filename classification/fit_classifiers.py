@@ -62,8 +62,17 @@ if classification_type in ['all', 'averaged']:
     all_pyspi_res_list = []
     for pyspi_res_file in os.listdir(pyspi_res_path_averaged):
         pyspi_res = pd.read_csv(f"{pyspi_res_path_averaged}/{pyspi_res_file}")
+        # Reset index
+        pyspi_res.reset_index(inplace=True, drop=True)
         pyspi_res['stimulus_type'] = pyspi_res['stimulus_type'].replace(False, 'false').replace('False', 'false')
         pyspi_res['relevance_type'] = pyspi_res['relevance_type'].replace("Relevant non-target", "Relevant-non-target")
+        # Rename stimulus to stimulus_presentation if it is present
+        if 'stimulus' in pyspi_res.columns:
+            if 'stimulus_presentation' in pyspi_res.columns:
+                pyspi_res.drop(columns=['stimulus'], inplace=True)
+            else:
+                pyspi_res = pyspi_res.rename(columns={'stimulus': 'stimulus_presentation'})
+
         all_pyspi_res_list.append(pyspi_res)
     all_pyspi_res = pd.concat(all_pyspi_res_list)
 
@@ -95,7 +104,7 @@ if classification_type in ['all', 'averaged']:
                 for stimulus_presentation in stimulus_presentation_comparisons:
                     print("Stimulus presentation:" + str(stimulus_presentation))
                     # Finally, we get to the final dataset
-                    final_dataset_for_classification = all_pyspi_res.query("meta_ROI_from == @ROI_from & meta_ROI_to == @ROI_to & relevance_type == @relevance_type & stimulus == @stimulus_presentation").reset_index(drop=True).drop(columns=['index'])
+                    final_dataset_for_classification = all_pyspi_res.query("meta_ROI_from == @ROI_from & meta_ROI_to == @ROI_to & relevance_type == @relevance_type & stimulus_presentation == @stimulus_presentation").reset_index(drop=True).drop(columns=['index'])
 
                     for SPI in final_dataset_for_classification.SPI.unique():
 
@@ -183,7 +192,7 @@ if classification_type in ['all', 'averaged']:
             for stimulus_presentation in stimulus_presentation_comparisons:
                 print("Stimulus presentation:" + str(stimulus_presentation))
                 # Finally, we get to the final dataset
-                final_dataset_for_classification = all_pyspi_res.query("meta_ROI_from == @ROI_from & relevance_type in @relevance_type_comparisons and meta_ROI_to == @ROI_to & stimulus == @stimulus_presentation").reset_index(drop=True).drop(columns=['index'])
+                final_dataset_for_classification = all_pyspi_res.query("meta_ROI_from == @ROI_from & relevance_type in @relevance_type_comparisons and meta_ROI_to == @ROI_to & stimulus_presentation == @stimulus_presentation").reset_index(drop=True).drop(columns=['index'])
 
                 for SPI in final_dataset_for_classification.SPI.unique():
 
